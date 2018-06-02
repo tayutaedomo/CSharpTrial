@@ -12,7 +12,8 @@ namespace ConsoleIEnumerableTrial
         {
             //DoFromTo();
             //DoSleepYield();
-            DoTaskYield();
+            //DoTaskYield();
+            DoNestedTaskYieldWithCallback();
         }
 
         static void DoFromTo()
@@ -74,6 +75,48 @@ namespace ConsoleIEnumerableTrial
             });
             t2.Wait();
             yield return "End 2nd";
+        }
+
+        static void DoNestedTaskYieldWithCallback()
+        {
+            foreach (string item in NestedTaskYield())
+                Console.WriteLine(item);
+        }
+
+        static IEnumerable<string> NestedTaskYield()
+        {
+            string t1Result = "";
+            Task t1 = SleepTaskWithCallback("1st", (str) => { t1Result = str; });
+            Console.WriteLine("Beafre wait");
+            t1.Wait();
+            yield return "End " + t1Result;
+            
+            string t2Result = "";
+            Task t2 = SleepTaskWithCallback("2st", (str) => { t2Result = str; });
+            Console.WriteLine("Beafre wait");
+            t2.Wait();
+            yield return "End " + t2Result;
+        }
+
+        static Task<string> SleepTaskWithCallback(string str, Action<string> callback)
+        {
+            return SleepTask(str).ContinueWith(t =>
+            {
+                Console.Write("t.Result {0}\n", t.Result);
+                callback(t.Result);
+                return t;
+
+            }).Unwrap();
+        }
+
+        static Task<string> SleepTask(string str)
+        {
+            return Task.Run(() =>
+            {
+                Console.Write("Start {0}\n", str);
+                Thread.Sleep(500);
+                return "nested " + str;
+            });
         }
     }
 }
