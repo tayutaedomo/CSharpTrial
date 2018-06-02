@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ConsoleIEnumerableTrial
 {
@@ -9,8 +10,9 @@ namespace ConsoleIEnumerableTrial
     {
         public static void Main(string[] args)
         {
-            DoFromTo();
-            DoSleepYield();
+            //DoFromTo();
+            //DoSleepYield();
+            DoTaskYield();
         }
 
         static void DoFromTo()
@@ -40,22 +42,38 @@ namespace ConsoleIEnumerableTrial
 
         static IEnumerable<string> SleepYield()
         {
-            Console.Write("Staart 1st\n");
+            Console.Write("Start 1st\n");
             Thread.Sleep(500);
             yield return "End 1st";
 
             Console.Write("Start 2nd\n");
             Thread.Sleep(500);
             yield return "End 2nd";
-
-            Console.Write("Start 3rd\n");
-            Thread.Sleep(500);
-            yield return "End 3rd";
         }
 
-        static void DoHttpYield()
+        static void DoTaskYield()
         {
+            foreach (string item in TaskYield())
+                Console.WriteLine(item);
+        }
+
+        static IEnumerable<string> TaskYield()
+        {
+            Task t1 = Task.Run(() =>
+            {
+                Console.Write("Start 1st\n");
+                Thread.Sleep(500);
+            });
+            t1.Wait();
+            yield return "End 1st";
             
+            Task t2 = Task.Run(() =>
+            {
+                Console.Write("Start 2nd\n");
+                Thread.Sleep(500);
+            });
+            t2.Wait();
+            yield return "End 2nd";
         }
     }
 }
